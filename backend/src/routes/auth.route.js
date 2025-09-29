@@ -6,8 +6,18 @@ import {
   updateProfile,
 } from "../controllers/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
+import { arcjetProtection } from "../middleware/arcjet.middleware.js";
 
 const router = express.Router();
+
+//* For Arcjet middleware test. you can change the max limit to 5 in arcjet.js- (slidingWindow)
+// router.get("/test", arcjetProtection, (request, response) => {
+//   return response
+//     .status(200)
+//     .json({ success: true, message: "Arcjet passed!" });
+// });
+
+router.use(arcjetProtection);
 
 router.post("/signup", signup);
 router.post("/login", login);
