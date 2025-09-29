@@ -3,6 +3,7 @@ import { ENV } from "../lib/env.js";
 import User from "../models/User.js";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 import { generateToken } from "../lib/utils.js";
+import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (request, response) => {
   const { fullname, email, password } = request.body;
@@ -75,8 +76,76 @@ export const signup = async (request, response) => {
   }
 };
 export const login = async (request, response) => {
-  response.send("Signup endpoint");
+  const { email, password } = request.body;
+
+  if (!email || !password) {
+    return response
+      .status(400)
+      .json({ success: false, message: "All fields are required." });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return response
+        .status(400)
+        .json({ success: false, message: "Invalid Credentials." });
+    }
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return response
+        .status(400)
+        .json({ success: false, message: "Invalid Credentials." });
+    }
+    generateToken(user._id, response);
+    return response.status(200).json({
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      profilePic: user.profilePic,
+      success: true,
+      message: "Login successful",
+    });
+  } catch (error) {
+    console.error("Error in login controller: ", error);
+    return response
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
 };
-export const logout = async (request, response) => {
-  response.send("Signup endpoint");
+export const logout = async (_, response) => {
+  response.cookie("mern-chat-app", "", { maxAge: 0 });
+  return response
+    .status(200)
+    .json({ success: true, message: "Logged out successfully." });
+};
+
+export const updateProfile = async (request, response) => {
+  try {
+    const { profilePic } = request.body;
+    if (!profilePic) {
+      return response
+        .status(400)
+        .json({ success: false, message: "Profile picture is required." });
+    }
+    const userId = request.user._id;
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePic: uploadResponse.secure_url,
+      },
+      { new: true }
+    ).select("-password");
+    return response.status(200).json({
+      success: true,
+      message: "Profile picture updated successfully.",
+      updatedUser,
+    });
+  } catch (error) {
+    console.error("Error in updateProfile controller: ", error);
+    return response
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
 };
