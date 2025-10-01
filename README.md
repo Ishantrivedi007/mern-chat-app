@@ -62,7 +62,7 @@ MongoDB (Atlas / Local)
 
 ⚙️ Installation & Setup
 Clone the repository
-git clone https://github.com/your-username/chat-app.git
+git clone https://github.com/Ishantrivedi007/mern-chat-app.git
 cd chat-app
 
 Setup Backend
