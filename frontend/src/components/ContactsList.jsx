@@ -6,7 +6,7 @@ import { useAuthStore } from "../store/useAuthStore";
 function ContactsList() {
   const { getAllContacts, allContacts, setSelectedUser, isUsersLoading } =
     useChatStore();
-  // const { onlineUsers } = useAuthStore();
+  const { onlineUsers } = useAuthStore();
 
   useEffect(() => {
     getAllContacts();
@@ -24,10 +24,9 @@ function ContactsList() {
         >
           <div className="flex items-center gap-3">
             <div
-            //TODO socket implementation
-            // className={`avatar ${
-            //   onlineUsers.includes(contact._id) ? "online" : "offline"
-            // }`}
+              className={`avatar ${
+                onlineUsers.includes(contact._id) ? "online" : "offline"
+              }`}
             >
               <div className="size-12 rounded-full">
                 <img src={contact.profilePic || "/avatar.png"} />
